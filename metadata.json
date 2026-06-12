@@ -1,0 +1,9 @@
+
+{
+  "name": "Sivenbrak Technologies Pvt Ltd",
+  "description": "A high-end modern IT consulting platform featuring an AI-powered project advisor powered by Gemini.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
