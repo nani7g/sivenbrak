@@ -11,10 +11,13 @@ const App: React.FC = () => {
   const formEndpoint = import.meta.env.VITE_FORMSPREE_ENDPOINT || '';
   const [formState, setFormState] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const [formError, setFormError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<'firstName' | 'lastName' | 'phone' | 'email', string>>>({});
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
+    phone: '',
     email: '',
+    message: '',
     goal: 'SAP Integration'
   });
 
@@ -34,9 +37,44 @@ const App: React.FC = () => {
     setActiveTestimonial((prev) => (prev - 1 + (TESTIMONIALS.length || 1)) % (TESTIMONIALS.length || 1));
   };
 
+  const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+  const isValidPhone = (value: string) => /^[0-9+\-()\s]{7,20}$/.test(value.trim());
+  const isFormValid =
+    formData.firstName.trim().length >= 2 &&
+    formData.lastName.trim().length >= 1 &&
+    isValidEmail(formData.email) &&
+    isValidPhone(formData.phone);
+
+  const validateForm = () => {
+    const nextErrors: Partial<Record<'firstName' | 'lastName' | 'phone' | 'email', string>> = {};
+
+    if (formData.firstName.trim().length < 1) {
+      nextErrors.firstName = 'Please enter a valid first name.';
+    }
+
+    if (formData.lastName.trim().length < 1) {
+      nextErrors.lastName = 'Please enter a valid last name.';
+    }
+
+    if (!isValidEmail(formData.email)) {
+      nextErrors.email = 'The email format is incorrect.';
+    }
+
+    if (!isValidPhone(formData.phone)) {
+      nextErrors.phone = 'Please enter a valid phone number.';
+    }
+
+    setFieldErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormState('sending');
+    setFormError('');
+    if (!validateForm()) {
+      setFormState('error');
+      return;
+    }
 
     if (!formEndpoint) {
       setFormError('Email notifications are not configured yet. Please call us at 9618495969.');
@@ -45,21 +83,24 @@ const App: React.FC = () => {
     }
 
     try {
+      setFormState('sending');
       const response = await fetch(formEndpoint, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name: `${formData.firstName} ${formData.lastName}`.trim(),
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          service: formData.goal,
-          company: 'Sivenbrak Technologies website',
-          submittedAt: new Date().toISOString(),
-        }),
+      body: JSON.stringify({
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phone: formData.phone,
+        email: formData.email,
+        message: formData.message,
+        service: formData.goal,
+        company: 'Sivenbrak Technologies website',
+        submittedAt: new Date().toISOString(),
+      }),
       });
 
       if (!response.ok) {
@@ -67,7 +108,8 @@ const App: React.FC = () => {
       }
 
       setFormState('success');
-      setFormData({ firstName: '', lastName: '', email: '', goal: 'SAP Integration' });
+      setFormData({ firstName: '', lastName: '', phone: '', email: '', message: '', goal: 'SAP Integration' });
+      setFieldErrors({});
       setTimeout(() => setFormState('idle'), 5000);
     } catch (error) {
       setFormError('We could not send your request. Please call us at 9618495969.');
@@ -75,8 +117,11 @@ const App: React.FC = () => {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    if (name === 'firstName' || name === 'lastName' || name === 'phone' || name === 'email') {
+      setFieldErrors(prev => ({ ...prev, [name]: '' }));
+    }
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
@@ -329,31 +374,50 @@ const App: React.FC = () => {
               ) : (
                 <form onSubmit={handleFormSubmit} className="space-y-8">
                   <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold uppercase tracking-widest text-slate-400">First Name</label>
-                      <input required type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} className="w-full px-6 py-4 bg-rose-50 border-none rounded-2xl focus:ring-2 focus:ring-rose-500 transition-all font-medium" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold uppercase tracking-widest text-slate-400">Last Name</label>
-                      <input required type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} className="w-full px-6 py-4 bg-rose-50 border-none rounded-2xl focus:ring-2 focus:ring-rose-500 transition-all font-medium" />
-                    </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-slate-400">First Name</label>
+                    <input required type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} className="w-full px-6 py-4 bg-rose-50 border-none rounded-2xl focus:ring-2 focus:ring-rose-500 transition-all font-medium" />
+                    {fieldErrors.firstName && <p className="text-sm font-semibold text-rose-600">{fieldErrors.firstName}</p>}
                   </div>
                   <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-slate-400">Last Name</label>
+                    <input required type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} className="w-full px-6 py-4 bg-rose-50 border-none rounded-2xl focus:ring-2 focus:ring-rose-500 transition-all font-medium" />
+                    {fieldErrors.lastName && <p className="text-sm font-semibold text-rose-600">{fieldErrors.lastName}</p>}
+                  </div>
+                </div>
+                <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-widest text-slate-400">Work Email</label>
                     <input required type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full px-6 py-4 bg-rose-50 border-none rounded-2xl focus:ring-2 focus:ring-rose-500 transition-all font-medium" />
+                    {fieldErrors.email && <p className="text-sm font-semibold text-rose-600">{fieldErrors.email}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-slate-400">Phone Number</label>
+                    <input required type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full px-6 py-4 bg-rose-50 border-none rounded-2xl focus:ring-2 focus:ring-rose-500 transition-all font-medium" placeholder="Enter phone number" />
+                    {fieldErrors.phone && <p className="text-sm font-semibold text-rose-600">{fieldErrors.phone}</p>}
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-widest text-slate-400">Project Strategy</label>
                     <select name="goal" value={formData.goal} onChange={handleInputChange} className="w-full px-6 py-4 bg-rose-50 border-none rounded-2xl focus:ring-2 focus:ring-rose-500 transition-all font-medium appearance-none">
-                      <option>SAP Integration</option><option>webMethods</option><option>Java</option><option>.Net</option><option>Testing</option><option>Microsoft Dynamics</option><option>Machine Learning / Deep Learning</option><option>Generative AI</option><option>Agentic AI</option>
+                      <option>SAP Integration</option><option>webMethods</option><option>Java</option><option>.Net</option><option>Testing</option><option>Microsoft Dynamics</option><option>Machine Learning / Deep Learning</option><option>Generative AI</option><option>Agentic AI</option><option>Others</option>
                     </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-slate-400">Message</label>
+                    <textarea
+                      name="message"
+                      value={formData.message}
+                      onChange={handleInputChange}
+                      rows={4}
+                      placeholder="Tell us briefly what you need..."
+                      className="w-full px-6 py-4 bg-rose-50 border-none rounded-2xl focus:ring-2 focus:ring-rose-500 transition-all font-medium resize-y"
+                    />
                   </div>
                   {formState === 'error' && (
                     <div className="rounded-2xl bg-rose-50 border border-rose-100 px-5 py-4 text-rose-700 font-semibold">
                       {formError}
                     </div>
                   )}
-                  <button type="submit" disabled={formState === 'sending'} className="w-full py-5 bg-rose-600 text-white rounded-2xl font-bold text-xl hover:bg-rose-700 transition-all shadow-xl shadow-rose-100 flex items-center justify-center gap-4">
+                  <button type="submit" disabled={formState === 'sending' || !isFormValid} className="w-full py-5 bg-rose-600 text-white rounded-2xl font-bold text-xl hover:bg-rose-700 transition-all shadow-xl shadow-rose-100 flex items-center justify-center gap-4 disabled:cursor-not-allowed disabled:opacity-50">
                     {formState === 'sending' ? 'Connecting...' : 'Secure Consultation'}
                   </button>
                 </form>
