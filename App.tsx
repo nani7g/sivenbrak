@@ -343,6 +343,15 @@ const App: React.FC = () => {
                   </div>
                   <span className="text-lg font-semibold group-hover:translate-x-1 transition-transform">9618495969</span>
                 </a>
+                <a href="mailto:sales@sivenbrak.com" className="grid grid-cols-[3rem_1fr] items-center gap-5 group w-fit">
+                  <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center group-hover:bg-white/20 transition-all">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16v12H4z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m4 7 8 6 8-6" />
+                    </svg>
+                  </div>
+                  <span className="text-lg font-semibold group-hover:translate-x-1 transition-transform">sales@sivenbrak.com</span>
+                </a>
                 <div className="grid grid-cols-[3rem_1fr] items-center gap-5">
                   <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -358,7 +367,7 @@ const App: React.FC = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" />
                     </svg>
                   </div>
-                  <span className="text-lg font-semibold leading-relaxed">Plot No208/P, Rd No 7, Devendra Nagar, Gajularamaram, Hyd, Hyderabad - 500055, Telangana</span>
+                  <span className="text-lg font-semibold leading-relaxed">Plot No208/P, Rd No 7, Devendra Nagar, Gajularamaram, Hyderabad - 500055, Telangana</span>
                 </div>
               </div>
             </div>
@@ -496,7 +505,7 @@ const App: React.FC = () => {
                 ))}
               </div>
               <div className="mt-8 pt-6 border-t border-slate-100 text-sm text-slate-400">
-                Registered office: Plot No208/P, Rd No 7, Devendra Nagar, Gajularamaram, Hyd, Hyderabad - 500055, Telangana.
+                Registered office: Plot No208/P, Rd No 7, Devendra Nagar, Gajularamaram, Hyderabad - 500055, Telangana.
               </div>
             </div>
           </div>
