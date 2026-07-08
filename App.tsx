@@ -161,6 +161,23 @@ const App: React.FC = () => {
     }
   };
 
+  const clientHighlights = [
+    {
+      id: 'nityo',
+      label: 'Nityo Infotech',
+    },
+    {
+      id: 'xtech',
+      label: 'XTech Consulting',
+    },
+    {
+      id: 'intelliswift',
+      label: 'intelliswift',
+      subLabel: 'An LTTS Company',
+      hasSubLabel: true
+    }
+  ];
+
   return (
     <div className="min-h-screen selection:bg-rose-100 selection:text-rose-900">
       <Navigation />
@@ -279,11 +296,21 @@ const App: React.FC = () => {
             <div className="max-w-2xl">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">Clients</h2>
               <p className="text-rose-100/70 text-lg">We are growing through focused partnerships, transparent execution, and the kind of responsive support clients expect from a committed technology team.</p>
-              <div className="flex flex-wrap gap-3 mt-8">
-                {TESTIMONIALS.map((client) => (
-                  <span key={client.id} className="px-5 py-3 rounded-full bg-white/10 border border-rose-800 text-sm font-bold uppercase tracking-widest">
-                    {client.author}
-                  </span>
+              <div className="grid gap-4 mt-8 sm:grid-cols-2 xl:grid-cols-3">
+                {clientHighlights.map((client) => (
+                  <div
+                    key={client.id}
+                    className="rounded-2xl shadow-lg border px-6 py-5 min-h-[96px] flex items-center justify-center text-center overflow-hidden bg-gradient-to-br from-rose-800 via-rose-700 to-red-600 border-rose-700/70"
+                  >
+                    <div className="leading-tight">
+                      <div className="text-2xl lg:text-3xl font-extrabold tracking-tight break-words whitespace-normal text-white">
+                        {client.label}
+                      </div>
+                      {'subLabel' in client && client.subLabel ? (
+                        <div className="mt-1 text-sm font-semibold text-white/80 break-words whitespace-normal">{client.subLabel}</div>
+                      ) : null}
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
