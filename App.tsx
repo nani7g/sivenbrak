@@ -40,7 +40,7 @@ const App: React.FC = () => {
   const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
   const isValidPhone = (value: string) => /^[0-9+\-()\s]{7,20}$/.test(value.trim());
   const isFormValid =
-    formData.firstName.trim().length >= 2 &&
+    formData.firstName.trim().length >= 1 &&
     formData.lastName.trim().length >= 1 &&
     isValidEmail(formData.email) &&
     isValidPhone(formData.phone);
@@ -90,21 +90,38 @@ const App: React.FC = () => {
           Accept: 'application/json',
           'Content-Type': 'application/json',
         },
-      body: JSON.stringify({
-        name: `${formData.firstName} ${formData.lastName}`.trim(),
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        phone: formData.phone,
-        email: formData.email,
-        message: formData.message,
-        service: formData.goal,
-        company: 'Sivenbrak Technologies website',
-        submittedAt: new Date().toISOString(),
-      }),
+        body: JSON.stringify({
+          name: `${formData.firstName} ${formData.lastName}`.trim(),
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          phone: formData.phone,
+          email: formData.email,
+          message: formData.message,
+          service: formData.goal,
+          company: 'Sivenbrak Technologies website',
+          submittedAt: new Date().toISOString(),
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Form submission failed');
+        const contentType = response.headers.get('content-type') || '';
+        let responseMessage = 'Form submission failed';
+
+        if (contentType.includes('application/json')) {
+          const data = await response.json().catch(() => null);
+          responseMessage =
+            data?.error ||
+            data?.message ||
+            data?.detail ||
+            responseMessage;
+        } else {
+          const text = await response.text().catch(() => '');
+          if (text.trim()) {
+            responseMessage = text.trim();
+          }
+        }
+
+        throw new Error(responseMessage);
       }
 
       setFormState('success');
@@ -112,7 +129,12 @@ const App: React.FC = () => {
       setFieldErrors({});
       setTimeout(() => setFormState('idle'), 5000);
     } catch (error) {
-      setFormError('We could not send your request. Please call us at 9618495969.');
+      const message = error instanceof Error ? error.message : '';
+      setFormError(
+        message && message !== 'Form submission failed'
+          ? message
+          : 'We could not send your request. Please call us at 9618495969.'
+      );
       setFormState('error');
     }
   };
